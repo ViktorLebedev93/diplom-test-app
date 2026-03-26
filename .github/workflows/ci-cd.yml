@@ -49,13 +49,10 @@ jobs:
     if: github.ref == 'refs/heads/main' || github.event_name == 'release'
     runs-on: ubuntu-latest
     steps:
-      - name: Install kubectl
-        uses: azure/setup-kubectl@v4
-        with:
-          version: 'latest'
-
       - name: Configure kubectl
         run: |
+          # Устанавливаем kubectl (встроенная команда в ubuntu-latest)
+          sudo apt-get update && sudo apt-get install -y kubectl
           mkdir -p $HOME/.kube
           echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
 
@@ -67,7 +64,7 @@ jobs:
           else
             kubectl rollout restart deployment/${{ env.K8S_DEPLOYMENT }} -n ${{ env.K8S_NAMESPACE }}
           fi
-          kubectl rollout status deployment/${{ env.K8S_DEPLOYMENT }} -n ${{ env.K8S_NAMESPACE }} || (kubectl describe pod -n ${{ env.K8S_NAMESPACE }} -l app=${{ env.K8S_DEPLOYMENT }} && exit 1)
+          kubectl rollout status deployment/${{ env.K8S_DEPLOYMENT }} -n ${{ env.K8S_NAMESPACE }}
 
       - name: Verify deployment
         run: |
